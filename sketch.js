@@ -5,7 +5,7 @@ let gameStarted = false;
 let gamePaused = false;
 
 function setup() {
-  createCanvas(800, 600); 
+  createCanvas(800, 600);
   paddle = new Paddle();
   ball = new Ball();
   setupLevel(level);
@@ -36,7 +36,7 @@ function draw() {
       textSize(14);
       text("Instrucciones:", width / 2, height / 2);
       text("Usa las flechas IZQUIERDA y DERECHA para mover la paleta", width / 2, height / 2 + 20);
-      text("Presiona 'P' para PAUSAR el juego", width / 2, height / 2 + 40); 
+      text("Presiona 'P' para PAUSAR el juego", width / 2, height / 2 + 40);
     }
     return;
   }
@@ -49,12 +49,12 @@ function draw() {
 
   let remaining = 0;
   for (let brick of bricks) {
-    if (brick.hp > 0) {
+    if (brick.hp > 0 || brick.indestructible) {
       brick.show();
       if (ball.checkBrick(brick)) {
-        score += 10;
+        if (!brick.indestructible) score += 10;
       }
-      remaining++;
+      if (brick.hp > 0 || brick.indestructible) remaining++;
     }
   }
 
@@ -136,8 +136,11 @@ function setupLevel(lvl) {
 
       if (lvl === 2 && r === 0 && c === 3) hp = 3;
       if (lvl === 3) {
-        if ((r === 0 && (c === 2 || c === 4))) hp = 3;
-        if (r === 0 && c === 3) indestructible = true;
+        if (r === 0 && (c === 2 || c === 4)) hp = 3;
+        if (r === 0 && c === 3) {
+          indestructible = true;
+          hp = 9999;
+        }
       }
 
       bricks.push(new Brick(x, y, brickW, brickH, hp, indestructible));
@@ -164,7 +167,7 @@ function resetGame() {
 
 class Paddle {
   constructor() {
-    this.w = 120; 
+    this.w = 120;
     this.h = 15;
     this.x = width / 2 - this.w / 2;
     this.y = height - 30;
@@ -178,14 +181,14 @@ class Paddle {
   }
 
   show() {
-    fill(255, 255, 0); 
+    fill(255, 255, 0);
     rect(this.x, this.y, this.w, this.h, 10);
   }
 }
 
 class Ball {
   constructor() {
-    this.r = 15; 
+    this.r = 15;
     this.reset();
   }
 
@@ -222,7 +225,7 @@ class Ball {
       this.x < b.x + b.w &&
       this.y - this.r < b.y + b.h &&
       this.y + this.r > b.y &&
-      b.hp > 0
+      (b.hp > 0 || b.indestructible)
     ) {
       if (!b.indestructible) b.hp--;
       this.ySpeed *= -1;
@@ -232,7 +235,7 @@ class Ball {
   }
 
   show() {
-    fill(255, 0, 0); 
+    fill(255, 0, 0);
     ellipse(this.x, this.y, this.r * 2);
   }
 }
@@ -249,7 +252,7 @@ class Brick {
 
   show() {
     if (this.hp <= 0 && !this.indestructible) return;
-    if (this.indestructible) fill(120);
+    if (this.indestructible) fill(100);
     else if (this.hp === 3) fill(255, 0, 0);
     else if (this.hp === 2) fill(255, 165, 0);
     else fill(0, 255, 255);
